@@ -1,0 +1,993 @@
+开始前说明:
+	1.每个接口的token传递均需要放入header中传递, 参数名: token
+	2.每个接口返回值的固定参数
+		code    : (int)    http 状态码
+		data    : (object) {
+			apiToken: (string) 接口token 24小时有效
+			teamID  : (int)    用户ID
+			needPhone    : (bool) 需要用户手机号标识  true=需要 
+			needUserInfo : (bool) 需要用户信息标识    true=需要 
+		}
+		message : (string) http请求信息
+
+一、接口
+	1.登录:
+		GET https://zxgybj.com/api/login?code=xxx
+		参数: 
+			code 微信随机码
+
+		返回:
+			apiToken: token值 24小时有效
+			teamID  : 用户ID
+			needPhone    : 需要用户手机号标识  true=需要 
+			needUserInfo : 需要用户信息标识    true=需要 
+		示例:
+			"code": 200,
+		    "data": {
+		        "apiToken" : "sadfdsreeafdaerdaerseaefdsfaesrawefasfearefadasreafdaseraafasseafsefadsaefae",
+		        "teamID"   : 1
+		        "needPhone"    : true,
+		        "needUserInfo" : true
+		    },
+		    "message": "ok"
+
+	2.B端填写资料:
+		GET https://zxgybj.com/api/team-profile
+
+		返回:
+			固定值 apiToken, teamID, needPhone, needUserInfo;
+			province: 省、直辖市、自治区
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+				"province": [
+	            {
+	                "id": "1",
+	                "code": "110000",
+	                "name": "北京市"
+	            },{
+	                "id": "2",
+	                "code": "120000",
+	                "name": "天津市"
+	            },{
+	                "id": "3",
+	                "code": "130000",
+	                "name": "河北省"
+	            }...]
+            },
+            "message": "ok"
+
+    3.获取城市
+    	GET https://zxgybj.com/api/get-place?provinceCode=xxx 
+    	参数:
+    		provinceCode: api/team-profile接口中返回值: code
+
+    	返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+			city: 城市
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+	    		"city": [
+	            {
+	                "id": "2",
+	                "code": "130100",
+	                "name": "石家庄市",
+	                "provincecode": "130000"
+	            },
+	            {
+	                "id": "3",
+	                "code": "130200",
+	                "name": "唐山市",
+	                "provincecode": "130000"
+	            },...]
+            },
+            "message": "ok"
+
+	4.获取县、区: 
+		GET https://zxgybj.com/api/get-place?cityCode=xxx 
+    	参数:
+    		cityCode: api/get-place获取城市接口中返回值: code
+		返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+			area: 县、区
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+	    		"area": [
+	            {
+	                "id": "37",
+	                "code": "130101",
+	                "name": "市辖区",
+	                "citycode": "130100"
+	            },
+	            {
+	                "id": "38",
+	                "code": "130102",
+	                "name": "长安区",
+	                "citycode": "130100"
+	            },
+	            {
+	                "id": "39",
+	                "code": "130103",
+	                "name": "桥东区",
+	                "citycode": "130100"
+	            },...],
+            },
+            "message" : "ok"
+
+    5.获取短信验证码
+    	POST https://zxgybj.com/api/get-msg-code
+    	参数:
+    		phone: 手机号
+
+		返回值: 
+			固定值 apiToken, teamID, needPhone, needUserInfo;
+			msgCode : 验证码
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+	    		"msgCode": xxx,
+            },
+            "message" : "ok
+
+    6.保存用户信息
+    	POST https://zxgybj.com/api/save-team-profile
+    	参数:
+    		name: 姓名
+    		identity: 身份证号码
+    		company: 公司名
+    		phone: 手机号
+    		msgCode: 验证码
+    		province: 省份
+    		city: 城市
+    		area: 县区
+
+		返回值: 
+			固定值 apiToken, teamID, needPhone, needUserInfo;
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+            },
+            "message" : "ok
+
+    7.首页(图片路径暂时有问题，调好了再通知您)
+    	GET https://zxgybj.com/api/index?limit=10&offset=0
+    	参数:
+    		limit  每页显示条数       default=10
+    		offset 每页显示开始位置   default=0
+
+    	返回值: 
+			固定值 apiToken, teamID, needPhone, needUserInfo;
+			lunbotp 轮播图
+			lunbo   轮播信息
+			pro     产品
+				id      商品ID, 点击详情时需要此参数
+				name    商品名称
+				biaoq1、biaoq2、biaoq3 三个标签
+				maxfybl 最大返佣比例
+				img     商品logo
+				retPay  返佣比例为0时，需要取此字段，表示每单返金额数量
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		    	"lunbotp": [
+		            {
+		                "id": "14",
+		                "tupian": "upload/2018/09/14/153900997微信图片_20180914153719.jpg",
+		                "lianjie": null,
+		                "proid": "29",
+		                "cadid": null,
+		                "type": "3"
+		            },...],
+		        "lunbo": [
+		            {
+		                "id": "6",
+		                "content": "<span style=\"color:#FF9900;\">宜人贷</span>为用户137****4568成功放款52000元​"
+		            },...],
+		        "pro": [
+		            {
+		                "id": "27",
+		                "name": "360借条",
+		                "biaoq1": "最高额度20万",
+		                "biaoq2": "征信良好即可",
+		                "biaoq3": "日息低至0.027%",
+		                "maxfybl": "0.00",
+		                "img": "upload/2018/09/03/185824243100-100.jpg",
+		                "retPay": "150"
+		            },
+		            {
+		                "id": "29",
+		                "name": "飞贷",
+		                "biaoq1": "审批快",
+		                "biaoq2": "最高30万",
+		                "biaoq3": "征信良好即可",
+		                "maxfybl": "2.00",
+		                "img": "upload/2018/09/13/150046441t01b6aef83daeed55b4.jpg",
+		                "retPay": null
+		            },...],
+            	}
+            "message" : "ok"
+
+    8.产品详情
+    	GET https://zxgybj.com/api/pro-detail?proID=4
+    	参数:
+    		proID 产品ID
+
+		返回:
+			固定值 apiToken, teamID, needPhone, needUserInfo;
+			cManager  客户经理信息
+			proDetail 产品详情
+				img 图片
+				name 产品名
+				biaoq1、biaoq2、biaoq3 三个标签
+				dked 贷款额度
+				loanTime 放款时间
+				perMil 月利率
+				liucheng 流程
+				certfifcate 需要的证件
+				question 常见问题
+				minfybl 最小返佣比例
+				maxfybl 最大返佣比例
+				payroll 工资计算
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "cManager": {
+		            "name": "姓名",
+		            "phone": "18888888888"
+		        },
+		        "proDetail": {
+		            "img": "upload/2018/07/12/172855034fangsil.png",
+		            "name": "房司令",
+		            "biaoq1": "最高可借15万",
+		            "biaoq2": "利率低",
+		            "biaoq3": "不看征信",
+		            "dked": "15万",
+		            "loanTime": "24小时",
+		            "perMil": 0.59,
+		            "liucheng": "<img src=\"/upload/20180724085338_669.jpg\" alt=\"\" />",
+		            "certfifcate": "<p>\r\n\t1、二代身份证\r\n</p>\r\n<p>\r\n\t2、实名制手机\r\n</p>\r\n<p>\r\n\t3、银行卡\r\n</p>\r\n<p>\r\n\t4、工作单位\r\n</p>",
+		            "question": "<p>\r\n\t<span style=\"line-height:1.5;\"><strong><span style=\"font-size:24px;color:#E53333;font-family:&quot;\">客户群体</span><span style=\"color:#E53333;font-family:&quot;\"><span style=\"font-size:24px;\">：</span><span style=\"font-size:18px;\">不看征信</span></span></strong><br />\r\n</span>\r\n</p>\r\n<p>\r\n\t<span style=\"line-height:1.5;\">1、中国大陆户籍</span> \r\n</p>\r\n<p>\r\n\t<span style=\"line-height:1.5;\">2、年龄22-50周岁</span> \r\n</p>\r\n<p>\r\n\t3、机审+回访本人\r\n</p>\r\n<p>\r\n\t4、玖富产品下款客户更易通过\r\n</p>",
+		            "minfybl": 1.8,
+		            "maxfybl": 3,
+		            "payroll": "<p>\r\n\t<img src=\"/upload/20180913162306_874.png\" alt=\"\" /> \r\n</p>\r\n<p>\r\n\t<span style=\"font-size:14px;\">假设您当月该产品放款完成100万，</span><span style=\"font-size:14px;\">那么您的推广佣金为100万乘以3%</span><span style=\"font-size:14px;\">等于30000元（不含税）。</span> \r\n</p>\r\n<p>\r\n\t<br />\r\n</p>"
+		        },
+		    },
+		    "message": "OK"
+
+    9.通过分享进入商品详情
+    	GET https://zxgybj.com/api/from-share?shareID=asdrersdfsdflkjhkjhkajsd
+    	参数:
+    		shareID 分享出去时携带的产品ID
+
+    	返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		proDetail 
+    			具体参数含义见产品详情接口
+    	示例:
+    		"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "proDetail": {
+		            "img": "upload/2018/07/23/231559004及贷2.png",
+		            "name": "及贷",
+		            "biaoq1": "额度最高10万",
+		            "biaoq2": "不看征信",
+		            "biaoq3": "5分钟到账",
+		            "dked": "10万",
+		            "loanTime": "5分钟",
+		            "perMil": 0.9,
+		            "liucheng": "<img src=\"/upload/20180626091608_939.png\" alt=\"\" /><br />",
+		            "certfifcate": "<p>\r\n\t1、二代身份证\r\n</p>\r\n<p>\r\n\t2、实名制手机\r\n</p>\r\n<p>\r\n\t3、银行卡\r\n</p>\r\n<p>\r\n\t4、信用卡\r\n</p>",
+		            "question": "<p>\r\n\t<strong><span style=\"font-size:24px;color:#E53333;font-family:&quot;\">客户群体</span><span style=\"color:#E53333;font-family:&quot;\"><span style=\"font-size:24px;\">：</span><span style=\"font-size:18px;\">不看征信</span></span></strong>\r\n</p>\r\n<p>\r\n\t1、年龄20-45周岁；\r\n</p>\r\n<p>\r\n\t2、有大专以上学历（学信网可查）更好\r\n</p>\r\n<p>\r\n\t3、有淘宝消费或者有信用卡\r\n</p>\r\n<p>\r\n\t4、手机必须实名制\r\n</p>\r\n<p>\r\n\t5、有学历优先申请【及优贷】\r\n</p>"
+		        },
+		    },
+		    "message": "OK"
+
+    10.我的会员
+    	GET https://zxgybj.com/api/my-member
+
+    	返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		myMember 会员信息和贷款产品
+    	示例:
+    		"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "myMember": [
+		            {
+		                "name": "姓名",
+		                "phone": "18888888888",
+		                "pro": "飞贷"
+		            }
+		        ],
+		    },
+		    "message": "OK"
+
+    11.发展会员
+    	GET https://zxgybj.com/api/dev-member
+
+    	返回:	
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		qrcode
+    			img 二维码连接
+    			date 时间
+    			nickname 昵称
+		示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "qrcode": {
+		            "img": "upload\\1540727652057888.jpg",
+		            "date": "2018-10-28",
+		            "nickname": "昵称"
+		        },
+		    },
+		    "message": "OK"
+
+    12.图文推广
+    	GET https://zxgybj.com/api/img-txt-extend
+
+    	返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		promotion 文章列表
+    			id 文章id，点击文章进入文章详情时需要传递此参数
+    			img 图片连接
+    			head 文章名称
+    			date 日期
+
+    	示例:
+    		"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "promotion": [
+		            {
+		                "id": "8",
+		                "img": "upload/2018/09/19/1236462272_602_310.jpg",
+		                "head": "芝麻分养成",
+		                "date": "2018-09-19 12:36:46"
+		            },
+		            {
+		                "id": "9",
+		                "img": "upload/2018/09/19/131702461timg (1).jpg",
+		                "head": "如何拥有一张漂亮的信用报告",
+		                "date": "2018-09-19 13:17:02"
+		            }
+		        ],
+		    },
+		    "message": "OK"
+
+    13.推广文章详情
+    	GET https://zxgybj.com/api/img-txt-detail?promotionID=8
+
+    	返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		promotion 文章信息
+    			content 内容
+    	示例:
+    		"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "promotion": {
+		            "head": "芝麻分养成",
+		            "date": "2018-09-19 12:36:46",
+		            "content": "<p class=\"MsoNormal\" style=\"text-align:center;text-indent:24pt;background:#F6F6F6;\">\r\n\t<br />\r\n</p>\r\n<p class=\"MsoNormal\" ..."
+		        },
+		    },
+	    	"message": "OK"
+
+	14.会员精英群
+		GET https://zxgybj.com/api/member-group
+
+		返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		memberGroup 群信息
+    	示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "memberGroup": {
+		            "name": "小蜜蜂精英群",
+		            "phone": "010-85801900",
+		            "img": "upload/2018/09/18/171643630微信图片_20180918171521.jpg"
+		        },
+		    },
+		    "message": "OK"
+
+    15.会员指南
+		GET https://zxgybj.com/api/member-guide
+
+		返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		memberGuide 会员指南
+    	示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "memberGuide": {
+		            "title": "会员指南",
+            		"content": "<p>\r\n\t<br />\r\n</p>\r\n<p class=\"MsoNormal\" align=\"center\" style=\"text-align:center;\">\r\n\t<b>会员指南</b> \r\n</p>\r\n<p class=\"MsoNormal\">\r\n\t<b>一</b><span>、</span> .....",
+		            "image": "upload/2018/06/27/105553565500673021.png"
+		        },
+		    },
+		    "message": "OK"
+
+    16.奖励说明
+    	GET https://zxgybj.com/api/prize-explain
+
+    	返回:
+    		固定值 apiToken, teamID, needPhone, needUserInfo;
+    		memberGuide 奖励说明
+    	示例:
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needPhone, needUserInfo;
+		        "memberGuide": {
+		            "title": "奖励说明",
+            		"content": "<p>\r\n\t<br />\r\n</p>\r\n<p class=\"MsoNormal\" align=\"center\" style=\"text-align:center;\">\r\n\t<b>奖励说明</b> \r\n</p>\r\n<p class=\"MsoNormal\">\r\n\t<b>一</b><span>、</span> .....",
+		            "image": "upload/2018/06/27/105553565500673021.png"
+		        },
+		    },
+		    "message": "OK"
+		    
+    17.扫码做单
+    	POST https://zxgybj.com/api/code-start
+    	参数: proID 产品ID
+    	
+    	返回: 固定值 apiToken, teamID, needPhone, needUserInfo;
+    		proName 产品名称
+    		proLogo 产品logo
+    		bjImg   背景图
+    		codeImg 二维码
+    	示例: 
+    	{
+		    "code": 200,
+		    "data": {
+		        "proName": "51人品贷",
+		        "proLogo": "C:/xdqtg888/2018/07/24/12093655451人品.jpg",
+		        "bjImg": "C:/xdqtg888/2018/07/27/145648750海报1.jpg",
+		        "codeImg": "C:/xdqtg888/1543133115811.jpg",
+		        "teamID": "516",
+		        "apiToken": "fba6bf5a1dae7da1bbd0860143980519da1d5d048b7b0e2e9c85032f58d3af24b19UNjk0bDNTelJNbXpfZS1sNUJUbGJfTHBNQV9xQ2NzWlBKT1VIVm96T0JONWwxR0lkWGhNdFBIb2pPMl8xNTQzMDY3ODU3XzUxNg==",
+		        "needPhone": false,
+		        "needUserInfo": false
+		    },
+		    "message": "OK"
+		}
+		
+二、接口
+	1.我的客户
+		GET https://zxgybj.com/api/my-client
+		
+		返回:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			myClient [] 
+				img   客户微信头像
+				name  客户姓名
+				phone 客户手机
+				pro   产品名称
+				money 贷款金额
+				time  还款时间
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			    	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			        "myClient": [
+			            {
+			                "img": "http://thirdwx.qlogo.cn/mmopen/vi_32/DYAIOgq83ergmZp5LwWZvrOuic9wfNj5NFtCF69rw6PL8IjT3497fKCvaQDenM98CTXzV3OteOGb1v2N2Bw2ic3A/132",
+			                "name": null,
+			                "phone": "18445350345",
+			                "pro": "360借条"
+			            },
+			        ],
+			    },
+			    "message": "OK"
+			}
+			
+	2.我的会员
+		GET https://zxgybj.com/api/my-member
+		
+		返回:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			myMember [] 
+				id    会员ID
+				img   会员头像
+				name  会员姓名
+				phone 会员手机
+				province 会员所在省份
+				city     会员所在城市
+				area     会员所在区
+		示例:
+		{
+		    "code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		        "myMember": [
+		            {
+		                "id": "517",
+		                "img": "http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTL9NBibPPXX98sdInHMIsk1D46yibBibibLZJSuIYDQMFEfWQLibCAZE8Hd2ttdc3nkMWsyjE54ibck3RNQ/132",
+		                "name": "包立春",
+		                "phone": "15700003434",
+		                "province": "北京市",
+		                "city": "市辖区",
+		                "area": "朝阳区"
+		            }
+		        ],
+		    },
+		    "message": "OK"
+		}
+		
+	3.B端查询用户信息接口（推广赚钱和直接分享前调用此接口查询是否需要填写信息）
+		GET https://zxgybj.com/api/get-team
+		
+		返回:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			needTeamInfo bool true=需要填写姓名、手机、身份证号码标识 false=已经全部填写
+			currentTeamID string  当前用户teamID,加密过的， 分享出去时的sjID即此值
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "needTeamInfo": false,
+			        "currentTeamID": "b730b99616e30f38c53071f95a8d7041d6ae54024f95fb58c3350d892f187bc7516",
+		        	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			    },
+			    "message": "OK"
+			}
+			
+    4.个人中心
+    	GET https://zxgybj.com/api/per-center
+    	
+    	返回值: 
+    		固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+    		img 用户头像
+    		all_money 我的佣金
+    		name 用户姓名
+    		client_count 客户数量
+    	示例:  
+    	{
+		    "code": 200,
+		    "data": {
+		        "img": "http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTIRG1fyCb7hIyAJstYMBF4Xlk6jylkQUvE7QxGd8ibABqbkib5dSGS3NvwyjaLSUDHxSX6PePOysnIQ/132",
+		        "all_money": 0,
+		        "name": "小123123",
+		        "client_count": "5",
+		       	 固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		    },
+		    "message": "OK"
+		}
+		
+	5.我的佣金
+		GET https://zxgybj.com/api/my-money
+		
+		返回值: 
+    		固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+    		allow 可提现
+    		total 累计佣金
+    		outs  已提现
+    	示例:  
+    	{
+		    "code": 200,
+		    "data": {
+		        "allow": 0,
+		        "total": 0,
+		        "outs": 0,
+	        	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		    },
+		    "message": "OK"
+		}
+		
+	6.app注册
+		POST https://zxgybj.com/api/register
+		参数: 
+			phone 手机号
+			msgCode 验证码
+			password 密码
+		
+		返回值:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			registerRs true=注册成功, 否则失败
+			
+		示例:  
+    	{
+		    "code": 200,
+		    "data": {
+		        "registerRs": true,
+	        	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		    },
+		    "message": "OK"
+		}
+		
+	7.app登录
+		POST https://zxgybj.com/api/app-login
+		参数:
+			phone 手机号
+			password 密码
+			
+		返回值:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			loginRs true=注册成功, 否则失败
+			
+		示例:  
+    	{
+		    "code": 200,
+		    "data": {
+		        "loginRs": true,
+	        	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		    },
+		    "message": "OK"
+		}
+		
+	8.app重置密码
+		POST https://zxgybj.com/api/reset-password
+		参数:
+			phone 手机号
+			msgCode 验证码
+			password 密码
+			
+		返回值:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			resetRs true=注册成功, 否则失败
+			
+		示例:  
+    	{
+		    "code": 200,
+		    "data": {
+		        "resetRs": true,
+	        	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		    },
+		    "message": "OK"
+		}
+		
+	9.app保存B端用户信息
+		POST https://zxgybj.com/api/app-save-team-profile
+    	参数:
+    		name: 姓名
+    		identity: 身份证号码
+    		company: 公司名
+    		province: 省份
+    		city: 城市
+    		area: 县区
+    		sjTeamPhone : 上级手机
+
+		返回值: 
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		示例:
+		{
+			"code": 200,
+		    "data": {
+		    	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+            },
+            "message" : "ok
+        }
+        
+    三、接口
+	1.推广赚钱/扫码做单 
+		GET https://zxgybj.com/api/code-start?proID=10
+		参数: proID   产品ID, api/index 接口中 pro 里面的 id
+
+		返回:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			proName 产品名称
+			proLogo 产品logo
+			bjImg   产品背景图 （扫码做单时二维码背景）
+			shareUrl 分享链接
+			codeImg 二维码图链接
+			code    成功标识
+
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "proName": "拍拍贷大额",
+			        "proLogo": "http://zxgybj.com:8080/2018/08/22/230310623110_67124eb0313ea723074d62e2c94a7e65_con.png",
+			        "bjImg": "http://zxgybj.com:8080/2018/07/27/150628143666.jpg",
+			        "shareUrl": "https://www.lb.com/api/from-share?shareID=9fea6962e7ad2c1abb415eb156cdcf647ae3abe6ea834ef5ccbab8085123831b396",
+			        "codeImg": "http://zxgybj.com:8080/1543852673487.jpg",
+			        "code": 200,
+			        固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			    },
+			    "message": "OK"
+			}
+			
+	2.获取C端用户
+		POST https://zxgybj.com/api/get-client
+		参数:
+			identity 身份证号码
+
+		返回:
+			code    成功标识
+			needCuserInfo  true需要C端用户信息  false不需要
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "needCuserInfo": true
+			    },
+			    "message": "OK"
+			}
+			
+	3.分享进入产品详情
+		GET 推广赚钱/扫码做单 接口返回值: shareUrl
+			https://zxgybj.com/api/from-share?shareID=asldjfkasdjfasdhfkasd
+		
+		返回:
+			sjTeamID 上级ID
+			shareID  分享ID
+		示例:
+		{
+		    "code": 200,
+		    "data": {
+		        "code": 200,
+		        "proDetail": {
+		            "img": "http://zxgybj.com:8080/2018/08/22/230310623110_67124eb0313ea723074d62e2c94a7e65_con.png",
+		            "name": "拍拍贷大额",
+		            "biaoq": [
+		                "额度最高20万",
+		                "无当前逾期即可",
+		                "当天到账"
+		            ],
+		            "dked": "20万",
+		            "loanTime": "2小时",
+		            "perMil": 0.78,
+		            "liucheng": "<img src=\"http://zxgybj.com:8080/20180822224526_796.jpg\" alt=\"\" />",
+		            "certfifcate": "<p>\r\n\t1、身份证\r\n</p>\r\n<p>\r\n\t2、银行卡\r\n</p>\r\n<p>\r\n\t3、手机卡\r\n</p>\r\n<p>\r\n\t4、网查征信（做这个产品前，需为客户先网查好征信）\r\n</p>",
+		            "question": "<p>\r\n\t<strong><span style=\"font-size:24px;\"><span style=\"color:#E53333;font-family:&quot;\">客户群体</span><span style=\"color:#E53333;font-family:&quot;\">：</span><span style=\"font-size:18px;color:#E53333;font-family:&quot;\">无当前逾期即可</span></span></strong>\r\n</p>\r\n<p>\r\n\t1、仅限首次注册且放款用户\r\n</p>\r\n<p>\r\n\t2、并非所有人都有“大额贷”入口\r\n</p>\r\n<p>\r\n\t3、有申报公积金的征信良好用户更易出大额度\r\n</p>\r\n<p>\r\n\t4、无回访电话\r\n</p>"
+		        },
+		        "sjTeamID": "b730b99616e30f38c53071f95a8d7041d6ae54024f95fb58c3350d892f187bc7516",
+		        "shareID": "9fea6962e7ad2c1abb415eb156cdcf647ae3abe6ea834ef5ccbab8085123831b396"
+		    },
+		    "message": "OK"
+		}
+			
+	3.保存C端用户
+		POST https://zxgybj.com/api/save-client
+		参数:
+			msgCode  短信验证码
+			shareID  api/from-share 接口返回的shareID
+			sjTeamID api/from-share 接口返回的sjTeamID
+			identity 身份证号码
+			phone    电话号码
+			name     姓名
+			
+		返回:
+			post_rs 保存成功
+		示例:
+		{
+		    "code": 200,
+		    "data": {
+		        "post_rs": true,
+		        "code": 200,
+		    },
+		    "message": "OK"
+		}
+		
+四、接口
+	1.提现
+		POST https://zxgybj.com/api/get-money
+		参数: money   金额, 大于零的整数
+
+		返回:
+			code   成功标识
+			getRs  提现成功
+
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "getRs": true
+			    },
+			    "message": "OK"
+			}
+			
+	2.提现记录
+		GET http://zxgybj.com/api/get-money-list
+
+		返回:
+			code    成功标识
+			getWMList  提现记录
+				id   提现表ID
+				num  提现金额
+				time 提现时间
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "getWMList": [
+			            {
+			                "id": "1",
+			                "num": "-123",
+			                "time": "2018-12-13 23:45:04"
+			            }
+			        ]
+			    },
+			    "message": "OK"
+			}
+			
+	3.我的佣金
+		GET https://zxgybj.com/api/my-money
+		
+		返回:
+			code  成功码
+			allow 可提现余额
+			total 累计佣金
+			outs  已提现
+		
+		示例:
+		{
+		    "code": 200,
+		    "data": {
+		        "allow": 0,
+		        "total": 0,
+		        "outs": 0,
+		        "code": 200
+		    },
+		    "message": "OK"
+		}
+		
+五、接口
+	1.行业动态
+		GET https://zxgybj.com/api/trade-news
+
+		返回:
+			code   成功标识
+			tradeNews  行业动态文章
+				time 发表时间
+				content 内容
+				img1 图片1
+				img2 图片2
+				img3 图片3
+
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "tradeNews": [
+			            {
+			                "id": "1",
+			                "time": "2018-12-16",
+			                "content": "<p class=\"MsoNormal\" style=\"text-indent:24.0000pt;background:#F6F6F6;\">\r\n\t<b><span style=\"font-size:16px;\">芝麻信用是什么？</span></b> \r\n</p>\r\n<p class=\"MsoNormal\" style=\"text-indent:24.0000pt;background:#F6F6F6;\">\r\n\t<span style=\"font-size:16px;\">简单的讲，就是支付宝自己建立的征信系统，最权威的自然是央行征信。支付宝数据强大，愿意用自己的体系来构建信用生态。网商银行、余额宝、招财宝等，都是蚂蚁金服旗下的产品。</span> \r\n</p>\r\n<p class=\"MsoNormal\" style=\"text-align:center;background:#F6F6F6;\" align=\"center\">\r\n\t<img src=\"/upload/20180919125611_422.png\" width=\"278\" height=\"211\" /> \r\n</p>\r\n<span style=\"font-size:16px;\">芝麻信用分，就是蚂蚁金服为个人用户信息加工、整理、计算后得出的信用评分，分值范围从</span><span style=\"font-size:16px;\">350到950</span>",
+			                "img1": "http://zxgybj.com:8080/201812161008515073.jpg",
+			                "img2": "http://zxgybj.com:8080/201812161008517970.jpg",
+			                "img3": "http://zxgybj.com:8080/201812161008515889.png"
+			            }
+			        ]
+			    },
+			    "message": "OK"
+			}
+			
+	2.客服咨询
+		POST https://zxgybj.com/api/consult
+		参数: 
+			comment 咨询内容
+
+		返回:
+			code  成功标识
+			addRs true=添加成功
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "addRs": true
+			    },
+			    "message": "OK"
+			}
+			
+	3.生成下载二维码
+		GET http://zxgybj.com/api/create-down-code
+		
+		返回: 
+			code       成功
+			EWMcodeUrl 二维码图片路径
+		示例:
+		{
+		    "code": 200,
+		    "data": {
+		        "code": 200,
+		        "EWMcodeUrl": "http://zxgybj.com:8080/downloadApp.jpg"
+		    },
+		    "message": "OK"
+		}
+		
+六、接口
+	1.app C端产品详情
+		GET https://zxgybj.com/api/app-from-share?proID=4&teamID=555
+
+		返回:
+			code   成功标识
+			sjTeamID  上级ID
+			shareID   分享ID
+			proDetail 产品详情 具体字段内容见B端产品详情解释
+
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "proDetail": {
+			            "img": "http://zxgybj.com:8080/2018/07/12/172855034fangsil.png",
+			            "name": "房司令",
+			            "biaoq": [
+			                "最高可借15万",
+			                "利率低",
+			                "不看征信"
+			            ],
+			            "dked": "15万",
+			            "loanTime": "24小时",
+			            "perMil": 0.59,
+			            "liucheng": "<img src=\"http://zxgybj.com:8080/20180724085338_669.jpg\" alt=\"\" />",
+			            "certfifcate": "<p>\r\n\t1、二代身份证\r\n</p>\r\n<p>\r\n\t2、实名制手机\r\n</p>\r\n<p>\r\n\t3、银行卡\r\n</p>\r\n<p>\r\n\t4、工作单位\r\n</p>",
+			            "question": "<p>\r\n\t<span style=\"line-height:1.5;\"><strong><span style=\"font-size:24px;color:#E53333;font-family:&quot;\">客户群体</span><span style=\"color:#E53333;font-family:&quot;\"><span style=\"font-size:24px;\">：</span><span style=\"font-size:18px;\">不看征信</span></span></strong><br />\r\n</span>\r\n</p>\r\n<p>\r\n\t<span style=\"line-height:1.5;\">1、中国大陆户籍</span> \r\n</p>\r\n<p>\r\n\t<span style=\"line-height:1.5;\">2、年龄22-50周岁</span> \r\n</p>\r\n<p>\r\n\t3、机审+回访本人\r\n</p>\r\n<p>\r\n\t4、玖富产品下款客户更易通过\r\n</p>",
+			            "ptconnect": "https://zujin.58fangdai.com/h5/register5/index?linksource=xmfjf"
+			        },
+			        "sjTeamID": "516",
+			        "shareID": 399
+			    },
+			    "message": "OK"
+			}
+			
+七、接口
+	1.app 绑定会员关系
+		POST https://zxgybj.com/api/app-bind-member
+		参数: 
+			msgCode 验证码
+			phone 	电话
+   			sjTeamID 上级ID
+
+		返回:
+			code   成功标识
+			post_rs true=保存成功
+
+		示例:
+			{
+			    "code": 200,
+			    "data": {
+			        "code": 200,
+			        "post_rs": true
+			    },
+			    "message": "OK"
+			}
+			
+			
+八、接口
+	1.小程序手机、验证码登录
+		POST https://zxgybj.com/api/mini-code-login
+		参数:
+			phone   手机号
+			msgCode 验证码
+			randomStr get-msg-code接口返回的字段
+			
+		返回值:
+			固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+			code 200=登录成功
+			
+		示例:  
+    	{
+		    "code": 200,
+		    "data": {
+		    	"code": 200,
+	        	固定值 apiToken, teamID, needAuthPhone, needUserInfo, needAuthUser
+		    },
+		    "message": "OK"
+		}
+		
+		
+		
+	
+            
+		
+			
