@@ -270,7 +270,7 @@ class WxFz
      **/
     public function SetOut_order_no($value)
     {
-        $this->values['out_order_no '] = $value;
+        $this->values['out_order_no'] = $value;
     }
     /**
      * 获取商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号的值
@@ -278,7 +278,7 @@ class WxFz
      **/
     public function GetOut_order_no()
     {
-        return $this->values['out_order_no '];
+        return $this->values['out_order_no'];
     }
     /**
      * 判断商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号是否存在
@@ -286,7 +286,7 @@ class WxFz
      **/
     public function IsOut_order_noSet()
     {
-        return array_key_exists('out_order_no ', $this->values);
+        return array_key_exists('out_order_no', $this->values);
     }
 
 

@@ -2,11 +2,15 @@
 namespace api\controllers;
 
 use api\models\LoginForm;
+use api\models\Order;
+use api\models\Orderfz;
 use api\models\Point;
 use api\models\Team;
 use api\models\WeChat;
 use api\models\Sms;
 use api\models\Tools;
+use api\models\WxFz;
+use api\models\WxPayCallback;
 use Exception;
 use Yii;
 use yii\filters\auth\HttpBearerAuth;
@@ -1376,6 +1380,7 @@ class ApiController extends ActiveController
     }
 
     public function buyMemberCallback($data) {
+        Tools::log($data, $this->actionName, null);
         if ($data["return_code"] == "SUCCESS") {
             if ($data["result_code"] == "SUCCESS") {
                 $payfee = $data["total_fee"];
