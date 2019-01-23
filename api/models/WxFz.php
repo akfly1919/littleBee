@@ -700,7 +700,7 @@ class WxFz
             "type" => "PERSONAL_OPENID",
             "account" => $openId,
             "amount" => $amount,
-            "description" => "PERSONAL_OPENID",
+            "description" => "分到个人",
             );
         $input->SetReceivers(json_encode($receiver));
         $input->SetSign("MD5", $conf['key']);

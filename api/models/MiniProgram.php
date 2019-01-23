@@ -33,12 +33,16 @@ class MiniProgram {
     public $comment;     // 咨询的内容
     public $tradeNewID;  // 行业动态详情ID
     public $miniPage;    // 小程序码跳转的页面
+    public $remoteIp;    // ip
+    public $tradeType;   // 订单来源
+    public $tradeId;     // 订单号
     private $openID;     // openid
     private $sessionKey; // sessionkey
     private $apiToken;   // token
     private $needUserInfo = true; // 需要用户填写信息标识
     private $needAuthUser = true; // 需要用户授权昵称头像信息标识
     private $needAuthPhone= true; // 需要用户授权手机号标识
+    private $needBuyMember= true; // 需要购买会
     
     // ---------------- 以下为当前controller、model公用方法
     
@@ -280,6 +284,14 @@ class MiniProgram {
                 case 'create-mini-code-client':
                     return $this->createMiniCodeClientInterface();
                     break;
+
+                case 'buy-member':
+                    return $this->buyMember();
+                    break;
+
+                case 'buy-member-check':
+                    return $this->buyMemberCheck();
+                    break;
             }
         
         } catch (Exception $e) {
@@ -299,6 +311,7 @@ class MiniProgram {
         $echoData['needAuthPhone']= $this->needAuthPhone;
         $echoData['needAuthUser'] = $this->needAuthUser;
         $echoData['needUserInfo'] = $this->needUserInfo;
+        $echoData['needBuyMember'] = $this->needBuyMember;
         
         return $echoData;
     }
@@ -320,12 +333,14 @@ class MiniProgram {
                 if($this->team->phone) $this->needAuthPhone = false;
                 if($this->team->nickname && $this->team->img)   $this->needAuthUser = false;
                 if($this->team->name && $this->team->sfznumber && $this->team->phone) $this->needUserInfo = false;
+                if($this->team->ispay > 0) $this->needBuyMember = false;
             }
             else
             {
                 $this->needAuthPhone = true;
                 $this->needAuthUser  = true;
                 $this->needUserInfo  = true;
+                $this->needBuyMember = true;
             }
         }
         else
@@ -333,6 +348,7 @@ class MiniProgram {
             $this->needAuthPhone = true;
             $this->needAuthUser  = true;
             $this->needUserInfo  = true;
+            $this->needBuyMember = true;
         }
     }
     // ---------------- 以上为当前controller、model公用方法
@@ -1602,5 +1618,97 @@ class MiniProgram {
                 return $trim;
                 break;
         }
+    }
+
+    /**
+     * 购买会员
+     */
+    protected function buyMember()
+    {
+        $echoData = [];
+        if($this->teamID)
+        {
+            $echoData['code'] = 200;
+            $team = Team::findOne((int) $this->teamID);
+            if ($team) {
+                if ($team->ispay == 0) {
+                    $conf = $this->littleBeeParams = Yii::$app->params['littleBeeParams'];
+                    $mt = Tools::getMillisecond();
+                    $tradeid = $this->teamID."_1_".$mt."_".Tools::randomkeys(4);
+
+                    $attach = "附加数据";
+                    $body = "小蜜蜂会员";
+                    $ip = $this->remoteIp;
+
+                    $tradeType = $this->tradeType;
+                    $sceneInfo = "{\"h5_info\": {\"type\":\"Wap\",\"wap_url\": \"https://pay.qq.com\",\"wap_name\": \"小蜜蜂会员\"}}";
+                    $price = 2;
+                    $res = WxPay::unifiedOrder($conf, $team->openid, $attach, $body, $ip, $price, $tradeType, $sceneInfo, $tradeid);
+                    if ($res["return_code"] == "SUCCESS") {
+                        if ($res["result_code"] == "SUCCESS") {
+                            $order = new Order();
+                            $order->orderid = $tradeid;
+                            $order->teamid = $this->teamID;
+                            $order->price = $price;
+                            $order->createtime = $mt;
+                            $order->tradetype = $tradeType;
+                            if ($this->sjTeamID > 0) {
+                                $sjteam = Team::findOne((int) $this->sjTeamID);
+                                if ($sjteam) {
+                                    $order->sjteamid = $this->sjTeamID;
+                                    $order->sjopenid = $sjteam->openid;
+                                }
+                            }
+                            if ($order->save()) {
+                                if ($tradeType == "MWEB") {
+                                    $echoData['mweb_url'] = $res["mweb_url"];
+                                } else if ($tradeType == "JSAPI") {
+                                    $echoData['timeStamp'] = "".time();
+                                    $echoData['nonceStr'] = date("YmdHis");
+                                    $echoData['package'] = "prepay_id=".$res["prepay_id"];
+                                    $echoData['signType'] = "MD5";
+                                    $echoData['paySign'] = WxPay::MakePaySign([
+                                        "appId"=>$conf['appid'],
+                                        "timeStamp"=>$echoData['timeStamp'],
+                                        "nonceStr"=>$echoData['nonceStr'],
+                                        "package"=>$echoData['package'],
+                                        "signType"=>$echoData['signType'],
+                                    ], "MD5", $conf['key']);
+                                }
+                                return $echoData;
+                            }
+                            throw new UnauthorizedHttpException('创建预订单失败');
+                        }
+                    }
+                    throw new UnauthorizedHttpException('请求微信失败:'.$res["return_msg"]);
+                }
+                throw new UnauthorizedHttpException('用户已经购买');
+            }
+            throw new UnauthorizedHttpException('用户不存在');
+        }
+        throw new UnauthorizedHttpException('token 是非法的');
+    }
+
+    protected function buyMemberCheck() {
+        $echoData = [];
+
+        if($this->teamID)
+        {
+            $echoData['code'] = 200;
+            $echoData['message'] = "OK";
+            $order = Order::findOne(array('orderid'=>$this->tradeId,'teamid'=>$this->teamID));
+            if($order)
+            {
+                if ($order->status != 0) {
+                    if ($order->status != 2) {
+                        return $echoData;
+                    }
+                    throw new UnauthorizedHttpException('错误订单');
+                }
+                throw new UnauthorizedHttpException('处理中...');
+            }
+            throw new UnauthorizedHttpException('非法订单.');
+        }
+        throw new UnauthorizedHttpException('token 是非法的');
     }
 }

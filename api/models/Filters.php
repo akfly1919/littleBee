@@ -756,4 +756,46 @@ class Filters{
         
         return [$openID, $sessionKey, $iv, $encryptedData];
     }
+	
+	public function getTradeType()
+    {
+        $paramName= 'tradeType';
+        $tradeType = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $tradeType = $tradeType ? htmlspecialchars(trim($tradeType)) : "MWEB";
+
+        if($tradeType != "MWEB" && $tradeType != "JSAPI")
+        {
+            $tradeType = "MWEB";
+        }
+
+        return $tradeType;
+    }
+
+    public function getTradeId()
+    {
+        $paramName= 'tradeId';
+        $tradeId = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $tradeId = !empty($tradeId) ? htmlspecialchars(trim($tradeId)) : "";
+
+        if(empty($tradeId))
+        {
+            throw new \ErrorException("订单为空");
+        }
+
+        return $tradeId;
+    }
+
+    public function getRemoteIp()
+    {
+        $paramName= 'remoteIp';
+        $remoteIp = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $remoteIp = !empty($remoteIp) ? htmlspecialchars(trim($remoteIp)) : "";
+
+        if(empty($remoteIp))
+        {
+            throw new \ErrorException("IP为空");
+        }
+
+        return $remoteIp;
+    }
 }

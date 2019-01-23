@@ -683,7 +683,7 @@ class WxPay
             $input->SetBody("$body");
             $input->SetOut_trade_no($tradeid);
             $input->SetTotal_fee($price);
-            $input->SetSpbill_create_ip($_SERVER['SERVER_ADDR'] );
+            $input->SetSpbill_create_ip($ip);
             $input->SetNotify_url("https://zxgybj.com/api/buy-member-callback");
             $input->SetTrade_type($tradeType);
             $input->SetOpenid($openId);
@@ -705,7 +705,7 @@ class WxPay
             $input->SetNotify_url("https://zxgybj.com/api/buy-member-callback");
             $input->SetOpenid($openId);
             $input->SetOut_trade_no($tradeid);
-            $input->SetSpbill_create_ip($_SERVER['SERVER_ADDR'] );
+            $input->SetSpbill_create_ip($ip);
             $input->SetTotal_fee($price);
             $input->SetTrade_type($tradeType);
             $input->SetScene_info($sceneInfo);

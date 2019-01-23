@@ -59,7 +59,6 @@ class ApiController extends ActiveController
     }
     
     public function behaviors() {
-        
         $behaviors = parent::behaviors();
         
         // remove authentication filter
@@ -1326,4 +1325,141 @@ class ApiController extends ActiveController
         return self::$OK;
     }
 
+    /**
+     * app 购买会员
+     */
+    public function actionBuyMember()
+    {
+        $this->actionName = Yii::$app->controller->action->id;
+        try {
+
+            $randomStr = $this->filters->request->post('randomStr') ? htmlspecialchars(trim($this->filters->request->post('randomStr'))) : null;
+
+            // 获取随机字符串
+            if(!is_null($randomStr))
+            {
+                $this->filters->setRandomStr($randomStr);
+
+                $this->filters->miniProgram->sjTeamID = $this->filters->getsjTeamID();
+                $this->filters->miniProgram->tradeType = $this->filters->getTradeType();
+                $this->filters->miniProgram->remoteIp = $this->filters->getRemoteIp();
+
+                return $this->apiPrepare();
+            }
+            throw new \ErrorException('randomStr 必填');
+            // 如果没有这个随机串将获取不到session的验证码
+
+        } catch (Exception $e) {
+
+            return $this->filters->errorCustom($e);
+        }
+    }
+
+
+    /**
+     * app 购买会员回调
+     */
+    public function actionBuyMemberCallback()
+    {
+        $this->actionName = Yii::$app->controller->action->id;
+        try {
+            $conf = Yii::$app->params['littleBeeParams'];
+
+            print_r(WxPayCallback::notify($conf["key"], array($this, "buyMemberCallback")));
+
+            die();
+
+        } catch (Exception $e) {
+
+            return $this->filters->errorCustom($e);
+        }
+    }
+
+    public function buyMemberCallback($data) {
+        if ($data["return_code"] == "SUCCESS") {
+            if ($data["result_code"] == "SUCCESS") {
+                $payfee = $data["total_fee"];
+                $payorderid = $data["transaction_id"];
+                $orderid = $data["out_trade_no"];
+                $paytime = strtotime($data["time_end"]);
+                $order = Order::findOne(array("orderid"=>$orderid));
+                if ($order) {
+                    if ($order->status == 1 || $order->status == 3) {
+                        return true;
+                    }
+                    $order->payfee = $payfee;
+                    $order->payorderid = $payorderid;
+                    $order->paytime = $paytime;
+                    $order->updatetime = Tools::getMillisecond();
+                    if ($order->payfee == $payfee) {
+                        $order->status = 1;
+                    } else {
+                        $order->status = 2;
+                    }
+                    if ($order->save()) {
+                        $team = Team::findOne((int) $order->teamid);
+                        $team->ispay = 1;
+                        $team->save();
+
+                        if (strlen($order->sjopenid) > 0) {
+                            $mt = Tools::getMillisecond();
+                            $fzorderid = $this->teamID."_2_".$mt."_".Tools::randomkeys(4);
+                            $orderfz = new Orderfz();
+                            $orderfz->fzorderid = $fzorderid;
+                            $orderfz->orderid = $orderid;
+                            $orderfz->payorderid = $payorderid;
+                            $orderfz->fzteamid = $order->sjteamid;
+                            $orderfz->fzopenid = $order->sjopenid;
+                            $orderfz->price = $order->price;
+                            $orderfz->ammount = $order->price/2;
+                            $orderfz->createtime = $mt;
+                            if ($orderfz->save()) {
+                                $conf = Yii::$app->params['littleBeeParams'];
+                                $res = WxFz::profitSharing($conf, $payorderid, $fzorderid, $order->sjopenid, $order->price/2);
+                                if ($res["return_code"] == "SUCCESS" && $res["result_code"] == "SUCCESS") {
+                                    $orderfz->fzpayorderid = $res["out_order_no"];
+                                    $orderfz->status = 1;
+                                    $orderfz->save();
+                                } else {
+                                    $orderfz->status = 2;
+                                    $orderfz->save();
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * app 购买会员回调
+     */
+    public function actionBuyMemberCheck()
+    {
+        $this->actionName = Yii::$app->controller->action->id;
+        try {
+            $randomStr = $this->filters->request->post('randomStr') ? htmlspecialchars(trim($this->filters->request->post('randomStr'))) : null;
+
+            // 获取随机字符串
+            if(!is_null($randomStr))
+            {
+                $this->filters->setRandomStr($randomStr);
+
+                $this->filters->miniProgram->tradeId = $this->filters->getTradeId();
+
+                return $this->apiPrepare();
+            }
+            throw new \ErrorException('randomStr 必填');
+            // 如果没有这个随机串将获取不到session的验证码
+
+        } catch (Exception $e) {
+
+            return $this->filters->errorCustom($e);
+        }
+    }
 }
