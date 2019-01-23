@@ -501,6 +501,21 @@ class WxPay
         return array_key_exists('openid', $this->values);
     }
 
+    public function SetProfit_sharing($value)
+    {
+        $this->values['profit_sharing'] = $value;
+    }
+
+    public function GetProfit_sharing()
+    {
+        return $this->values['profit_sharing'];
+    }
+
+    public function IsProfit_sharingSet()
+    {
+        return array_key_exists('profit_sharing', $this->values);
+    }
+
     /**
      * 设置签名，详见签名生成算法
      * @param string $value

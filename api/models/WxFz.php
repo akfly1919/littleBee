@@ -696,16 +696,16 @@ class WxFz
         $input->SetNonce_str($timeStr);
         $input->SetTransaction_id($payOrderId);
         $input->SetOut_order_no($orderId);
-        $receiver = array(
+        $receiver = array(array(
             "type" => "PERSONAL_OPENID",
             "account" => $openId,
             "amount" => $amount,
             "description" => "分到个人",
-            );
+            ));
         $input->SetReceivers(json_encode($receiver));
         $input->SetSign("MD5", $conf['key']);
         $xml = $input->ToXml();
-        //print_r($xml);exit;
+        //print_r($xml);
         $url = $conf["profitSharingUrl"];
         $res = WxPay::postXmlCurl($xml, $url, true, 30);
         //print_r($res);exit;

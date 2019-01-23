@@ -11,7 +11,7 @@ return [
         'secret'      => '836b9cc3975a160ec569ecd25d2a89be',
         'key'      => 'zxgybjjrfwwbyxgs888888888888zxgy',
         'mchid'      => '1522792231',
-        'submchid'      => '1522792231',
+        'submchid'      => '1511925291',
 
         
         'loginUrl'          => "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code&connect_redirect=1",
