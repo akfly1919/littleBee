@@ -1369,6 +1369,9 @@ class ApiController extends ActiveController
     public function actionBuyMemberCallback()
     {
         $this->actionName = Yii::$app->controller->action->id;
+
+        Tools::log($_REQUEST, $this->actionName, null);
+
         try {
             $conf = Yii::$app->params['littleBeeParams'];
 
