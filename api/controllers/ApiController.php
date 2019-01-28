@@ -1346,6 +1346,7 @@ class ApiController extends ActiveController
                 $this->filters->setRandomStr($randomStr);
 
                 $this->filters->miniProgram->shareOpenId = $this->filters->getShareOpenId();
+                $this->filters->miniProgram->shareRealName = $this->filters->getShareRealName();
                 $this->filters->miniProgram->tradeType = $this->filters->getTradeType();
                 $this->filters->miniProgram->remoteIp = $this->filters->getRemoteIp();
                 $this->filters->miniProgram->wxId = $this->filters->getWxId();

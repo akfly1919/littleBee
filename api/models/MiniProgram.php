@@ -39,6 +39,7 @@ class MiniProgram {
     public $wxId;        // 微信ID
     public $wxName;      // 微信名称
     public $shareOpenId; // 分账openId
+    public $shareRealName; // 分账真实姓名
     private $openID;     // openid
     private $sessionKey; // sessionkey
     private $apiToken;   // token
@@ -1644,11 +1645,12 @@ class MiniProgram {
                     $tradeType = $this->tradeType;
                     $clientIp = $this->remoteIp;
                     $shareOpenId = $this->shareOpenId;
+                    $shareRealName = $this->shareRealName;
 
                     $thirdWxPay = new ThirdWxPay();
                     if ($shareOpenId) {
                         $res = $thirdWxPay->payWxShareAddReceiver('buy-member', $this->teamID,
-                            $shareOpenId, $shareOpenId, 4);
+                            $shareOpenId, $shareRealName, 4);
                         if ($res != false
                             && $res["retCode"] == "SUCCESS"
                             && $res["resCode"] == "SUCCESS") {

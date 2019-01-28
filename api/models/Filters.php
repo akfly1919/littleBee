@@ -824,4 +824,13 @@ class Filters{
 
         return $shareOpenId;
     }
+
+    public function getShareRealName()
+    {
+        $paramName= 'shareRealName';
+        $shareRealName = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $shareRealName = !empty($shareRealName) ? htmlspecialchars(trim($shareRealName)) : "";
+
+        return $shareRealName;
+    }
 }
