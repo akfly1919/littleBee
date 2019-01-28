@@ -36,6 +36,9 @@ class MiniProgram {
     public $remoteIp;    // ip
     public $tradeType;   // 订单来源
     public $tradeId;     // 订单号
+    public $wxId;        // 微信ID
+    public $wxName;      // 微信名称
+    public $shareOpenId; // 分账openId
     private $openID;     // openid
     private $sessionKey; // sessionkey
     private $apiToken;   // token
@@ -1628,56 +1631,58 @@ class MiniProgram {
         $echoData = [];
         if($this->teamID)
         {
-            $echoData['code'] = 200;
             $team = Team::findOne((int) $this->teamID);
             if ($team) {
                 if ($team->ispay == 0) {
-                    $conf = $this->littleBeeParams = Yii::$app->params['littleBeeParams'];
                     $mt = Tools::getMillisecond();
-                    $tradeid = $this->teamID."_1_".$mt."_".Tools::randomkeys(4);
-
-                    $attach = "附加数据";
+                    $tradeId = $this->teamID."_1_".$mt."_".Tools::randomkeys(4);
                     $body = "小蜜蜂会员";
-                    $ip = $this->remoteIp;
+                    $openId = $team->openid;
+                    $amount = 3;
+                    $shareAmount = 1;
 
                     $tradeType = $this->tradeType;
-                    $sceneInfo = "{\"h5_info\": {\"type\":\"Wap\",\"wap_url\": \"https://pay.qq.com\",\"wap_name\": \"小蜜蜂会员\"}}";
-                    $price = 2;
-                    $res = WxPay::unifiedOrder($conf, $team->openid, $attach, $body, $ip, $price, $tradeType, $sceneInfo, $tradeid);
-                    if ($res["return_code"] == "SUCCESS") {
-                        if ($res["result_code"] == "SUCCESS") {
-                            $order = new Order();
-                            $order->orderid = $tradeid;
-                            $order->teamid = $this->teamID;
-                            $order->price = $price;
-                            $order->createtime = $mt;
-                            $order->tradetype = $tradeType;
-                            if ($this->sjTeamID > 0) {
-                                $sjteam = Team::findOne((int) $this->sjTeamID);
-                                if ($sjteam) {
-                                    $order->sjteamid = $this->sjTeamID;
-                                    $order->sjopenid = $sjteam->openid;
+                    $clientIp = $this->remoteIp;
+                    $shareOpenId = $this->shareOpenId;
+
+                    $thirdWxPay = new ThirdWxPay();
+                    if ($shareOpenId) {
+                        $res = $thirdWxPay->payWxShareAddReceiver('buy-member', $this->teamID,
+                            $shareOpenId, $shareOpenId, 4);
+                        if ($res != false
+                            && $res["retCode"] == "SUCCESS"
+                            && $res["resCode"] == "SUCCESS") {
+                            $res = $thirdWxPay->payWxOrderWithShare('buy-member', $this->teamID, $tradeId,
+                                $amount, $clientIp, $body, $openId, $shareAmount, $shareOpenId);
+                        } else {
+                            throw new UnauthorizedHttpException('添加分账账户失败');
+                        }
+                    } else {
+                        $res = $thirdWxPay->payWxOrder('my-test', $this->teamID, $tradeId, $amount,
+                            $clientIp, $body, $openId);
+                    }
+                    if ($res != false) {
+                        if ($res["retCode"] == "SUCCESS") {
+                            if ($res["resCode"] == "SUCCESS") {
+                                $order = new Order();
+                                $order->orderid = $tradeId;
+                                $order->teamid = $this->teamID;
+                                $order->price = $amount;
+                                $order->createtime = $mt;
+                                $order->tradetype = $tradeType;
+                                if (!empty($shareOpenId)) {
+                                    $order->sjopenid = $shareOpenId;
                                 }
-                            }
-                            if ($order->save()) {
-                                if ($tradeType == "MWEB") {
-                                    $echoData['mweb_url'] = $res["mweb_url"];
-                                } else if ($tradeType == "JSAPI") {
-                                    $echoData['timeStamp'] = "".time();
-                                    $echoData['nonceStr'] = date("YmdHis");
-                                    $echoData['package'] = "prepay_id=".$res["prepay_id"];
-                                    $echoData['signType'] = "MD5";
-                                    $echoData['paySign'] = WxPay::MakePaySign([
-                                        "appId"=>$conf['appid'],
-                                        "timeStamp"=>$echoData['timeStamp'],
-                                        "nonceStr"=>$echoData['nonceStr'],
-                                        "package"=>$echoData['package'],
-                                        "signType"=>$echoData['signType'],
-                                    ], "MD5", $conf['key']);
+                                if ($order->save()) {
+                                    if ($tradeType == "MWEB") {
+                                        $echoData['mweb_url'] = $res["mweb_url"];
+                                    } else if ($tradeType == "JSAPI") {
+                                        $echoData = array_merge($echoData, $res["payParams"]);
+                                    }
+                                    return $echoData;
                                 }
-                                return $echoData;
+                                throw new UnauthorizedHttpException('创建预订单失败');
                             }
-                            throw new UnauthorizedHttpException('创建预订单失败');
                         }
                     }
                     throw new UnauthorizedHttpException('请求微信失败:'.$res["return_msg"]);

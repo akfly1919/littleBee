@@ -24,6 +24,15 @@ return [
         //分账地址
         'profitSharingUrl'    => 'https://api.mch.weixin.qq.com/secapi/pay/profitsharing',
     ],
+
+    'thirdWxPayParams' => [
+        'actionUrl'       => 'https://pay.malls.iformall.com/pay/api',
+        'mchId'      => '10000001',
+        //'reqKey'      => 'W750I07PEIXWWWDYDCIKGAH3HKSV5PZZ',
+        'reqKey'      => '26GBXQ1T5BERCVTBCNUEHQRRD7W5LPW3',
+        //'resKey'      => 'VOT1Z6F7VJA610FSAV5U0BO6G7N10WZW',
+        'resKey'      => 'SR5Y3RP7SZUV1VIG20LDZW62LWPQDWQN',
+    ],
     
     // accessToken 文件地址
     'accessTokenFile'=> '/data/www/littleBee/api/web/accessToken.txt',

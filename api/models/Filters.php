@@ -798,4 +798,30 @@ class Filters{
 
         return $remoteIp;
     }
+
+    public function getWxId()
+    {
+        $paramName= 'wxId';
+        $wxId = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $wxId = !empty($wxId) ? htmlspecialchars(trim($wxId)) : "";
+        return $wxId;
+    }
+
+    public function getWxName()
+    {
+        $paramName= 'wxName';
+        $wxName = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $wxName = !empty($wxName) ? htmlspecialchars(trim($wxName)) : "";
+
+        return $wxName;
+    }
+
+    public function getShareOpenId()
+    {
+        $paramName= 'shareOpenId';
+        $shareOpenId = $this->controlType === self::TYPE_G ? $this->request->get($paramName) : $this->request->post($paramName);
+        $shareOpenId = !empty($shareOpenId) ? htmlspecialchars(trim($shareOpenId)) : "";
+
+        return $shareOpenId;
+    }
 }

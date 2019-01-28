@@ -6,6 +6,7 @@ use api\models\Order;
 use api\models\Orderfz;
 use api\models\Point;
 use api\models\Team;
+use api\models\ThirdWxPay;
 use api\models\WeChat;
 use api\models\Sms;
 use api\models\Tools;
@@ -1344,9 +1345,11 @@ class ApiController extends ActiveController
             {
                 $this->filters->setRandomStr($randomStr);
 
-                $this->filters->miniProgram->sjTeamID = $this->filters->getsjTeamID();
+                $this->filters->miniProgram->shareOpenId = $this->filters->getShareOpenId();
                 $this->filters->miniProgram->tradeType = $this->filters->getTradeType();
                 $this->filters->miniProgram->remoteIp = $this->filters->getRemoteIp();
+                $this->filters->miniProgram->wxId = $this->filters->getWxId();
+                $this->filters->miniProgram->wxName = $this->filters->getWxName();
 
                 return $this->apiPrepare();
             }
