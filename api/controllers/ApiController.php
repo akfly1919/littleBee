@@ -91,7 +91,7 @@ class ApiController extends ActiveController
         // $behaviors['authenticator']['except'] = ['options'];
         
         $this->filters = new Filters();
-        
+
         return $behaviors;
     }
     
@@ -1371,79 +1371,57 @@ class ApiController extends ActiveController
     {
         $this->actionName = Yii::$app->controller->action->id;
 
-        Tools::log($_REQUEST, $this->actionName, null);
-
+        Tools::log($_GET, $this->actionName, null);
         try {
-            $conf = Yii::$app->params['littleBeeParams'];
-
-            print_r(WxPayCallback::notify($conf["key"], array($this, "buyMemberCallback")));
-
-            die();
-
+            $thirdWxPay = new ThirdWxPay();
+            $res = $thirdWxPay->notify($_GET);
+            if ($res === false) {
+                Tools::log(['errMsg'=>'验签错误','data'=>$_GET], $this->actionName, null);
+                die('FAIL');
+            }
+            if ($this->buyMemberCallback($_GET)) {
+                die('SUCCESS');
+            }
+            die('FAIL');
         } catch (Exception $e) {
-
             return $this->filters->errorCustom($e);
         }
     }
 
     public function buyMemberCallback($data) {
-        Tools::log($data, $this->actionName, null);
-        if ($data["return_code"] == "SUCCESS") {
-            if ($data["result_code"] == "SUCCESS") {
-                $payfee = $data["total_fee"];
-                $payorderid = $data["transaction_id"];
-                $orderid = $data["out_trade_no"];
-                $paytime = strtotime($data["time_end"]);
-                $order = Order::findOne(array("orderid"=>$orderid));
-                if ($order) {
-                    if ($order->status == 1 || $order->status == 3) {
-                        return true;
-                    }
-                    $order->payfee = $payfee;
-                    $order->payorderid = $payorderid;
-                    $order->paytime = $paytime;
-                    $order->updatetime = Tools::getMillisecond();
-                    if ($order->payfee == $payfee) {
-                        $order->status = 1;
-                    } else {
-                        $order->status = 2;
-                    }
-                    if ($order->save()) {
-                        $team = Team::findOne((int) $order->teamid);
-                        $team->ispay = 1;
-                        $team->save();
-
-                        if (strlen($order->sjopenid) > 0) {
-                            $mt = Tools::getMillisecond();
-                            $fzorderid = $this->teamID."_2_".$mt."_".Tools::randomkeys(4);
-                            $orderfz = new Orderfz();
-                            $orderfz->fzorderid = $fzorderid;
-                            $orderfz->orderid = $orderid;
-                            $orderfz->payorderid = $payorderid;
-                            $orderfz->fzteamid = $order->sjteamid;
-                            $orderfz->fzopenid = $order->sjopenid;
-                            $orderfz->price = $order->price;
-                            $orderfz->ammount = $order->price/2;
-                            $orderfz->createtime = $mt;
-                            if ($orderfz->save()) {
-                                $conf = Yii::$app->params['littleBeeParams'];
-                                $res = WxFz::profitSharing($conf, $payorderid, $fzorderid, $order->sjopenid, $order->price/2);
-                                if ($res["return_code"] == "SUCCESS" && $res["result_code"] == "SUCCESS") {
-                                    $orderfz->fzpayorderid = $res["out_order_no"];
-                                    $orderfz->status = 1;
-                                    $orderfz->save();
-                                } else {
-                                    $orderfz->status = 2;
-                                    $orderfz->save();
-                                }
-                            }
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-                return false;
+        $payfee = $data["amount"];
+        $payorderid = $data["payOrderId"];
+        $chorderid = $data["channelOrderNo"];
+        $orderid = $data["mchOrderNo"];
+        $paytime = $data["paySuccTime"];
+        $order = Order::findOne(array("orderid"=>$orderid));
+        if ($order) {
+            if ($order->status == 1) {
+                Tools::log(['outMsg'=>'订单已经支付成功','orderid'=>$orderid], $this->actionName, null);
+                return true;
             }
+            $order->payfee = $payfee;
+            $order->payorderid = $payorderid;
+            $order->chorderid = $chorderid;
+            $order->paytime = $paytime;
+            $order->updatetime = Tools::getMillisecond();
+            if ($order->payfee == $payfee) {
+                $order->status = 1;
+            } else {
+                $order->status = 2;
+                Tools::log(['errMsg'=>'订单金额不符','orderid'=>$orderid,'payfee'=>$payfee,'dbPayfee'=>$order->payfee],
+                    $this->actionName, null);
+            }
+            if ($order->save()) {
+                Tools::log(['outMsg'=>'订单支付成功','orderid'=>$orderid], $this->actionName, null);
+                $team = Team::findOne((int) $order->teamid);
+                $team->ispay = 1;
+                if (!$team->save()) {
+                    Tools::log(['errMsg'=>'修改用户ispay状态为1失败','teamid'=>$order->teamid], $this->actionName, null);
+                }
+                return true;
+            }
+            return false;
         }
         return false;
     }

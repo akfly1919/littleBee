@@ -765,6 +765,19 @@ class MiniProgram {
                 $echoData['all_money']   = $team->allmoney ? $team->allmoney : 0;
                 $echoData['name']        = $team->name ? $team->name : $team->nickname;
                 $echoData['client_count']= $count_c;
+
+                $echoData['id'] = $this->teamID;
+                $echoData['nickname'] = $team->nickname;
+                $echoData['identity'] = $team->sfznumber;
+                $echoData['phone'] = $team->phone;
+                $echoData['ispay'] = $team->ispay;
+                if ($team->parid > 0) {
+                    $sjTeam = Team::findOne((int) $team->parid);
+                    if ($sjTeam) {
+                        $echoData['sjteam']['id'] = $team->parid;
+                        $echoData['sjteam']['name'] = $sjTeam->name;
+                    }
+                }
                 
                 return $echoData;
             }
@@ -1088,6 +1101,7 @@ class MiniProgram {
         $echoData['currentTeamID'] = $team ? $this->hash($team->id) : null;
         $echoData['name']  = $team ? $team->name  : null;
         $echoData['phone'] = $team ? $team->phone : null;
+        $echoData['ispay'] = $team ? $team->ispay : null;
         
         return $echoData;
     }
@@ -1539,7 +1553,7 @@ class MiniProgram {
         return $echoData;
     }
     
-    private function savePromotionID()
+    private function savePromotionID($team)
     {
         // 保存promotionid
         if($team->promotionid)

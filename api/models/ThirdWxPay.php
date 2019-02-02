@@ -55,7 +55,7 @@ class ThirdWxPay
             'type' => $type,
         );
         $this->values['extra'] = json_encode($extra, JSON_UNESCAPED_UNICODE);
-        $this->values['signType'] = "HMAC-SHA256";
+        $this->values['signType'] = $this->signType;
         $this->values['sign'] = $this->makeSign($this->values, $this->values['signType'], $this->reqKey);
         try {
             $resultJson = self::doPost(json_encode($this->values, JSON_UNESCAPED_UNICODE), $this->actionUrl."/pay/ps_add_receiver");
@@ -97,7 +97,7 @@ class ThirdWxPay
         );
 
         $this->values['extra'] = json_encode($extra, JSON_UNESCAPED_UNICODE);
-        $this->values['signType'] = "HMAC-SHA256";
+        $this->values['signType'] = $this->signType;
         $this->values['sign'] = $this->makeSign($this->values, $this->values['signType'], $this->reqKey);
 
         try {
@@ -131,7 +131,7 @@ class ThirdWxPay
         $extra = array();
         $extra['openId'] = $openId;
         $this->values['extra'] = json_encode($extra, JSON_UNESCAPED_UNICODE);
-        $this->values['signType'] = "HMAC-SHA256";
+        $this->values['signType'] = $this->signType;
         $this->values['sign'] = $this->makeSign($this->values, $this->values['signType'], $this->reqKey);
         try {
             $resultJson = self::doPost(json_encode($this->values), $this->actionUrl."/pay/create_order");
@@ -147,6 +147,18 @@ class ThirdWxPay
             Tools::log(['funcName' => 'payWxOrder', $exception->getCode() => $exception->getMessage()], $actionName, $teamId);
         }
         return false;
+    }
+
+    public function notify($values) {
+        $this->values = $values;
+        if (!isset($this->values['sign'])) {
+            return false;
+        }
+        $servSign = $this->makeSign($this->values, $this->signType, $this->resKey);
+        if ($servSign != $this->values['sign']) {
+            return false;
+        }
+        return $this->values;
     }
 
     private function makeSign($arr, $signType, $key)

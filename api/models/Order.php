@@ -16,6 +16,7 @@ use yii\web\UnauthorizedHttpException;
  * @property int $price
  * @property int $payfee
  * @property string $payorderid
+ * @property string $chorderid
  * @property int $paytime
  * @property int $sjteamid
  * @property string $sjopenid
@@ -42,7 +43,7 @@ class Order extends \yii\db\ActiveRecord
     {
         return [
             [['teamid','createtime','price','payfee','paytime','sjteamid','status', 'updatetime'], 'integer'],
-            [['orderid','payorderid','sjopenid', 'tradetype'], 'string', 'max' => 32],
+            [['orderid','payorderid','chorderid','sjopenid', 'tradetype'], 'string', 'max' => 32],
         ];
     }
 
@@ -59,6 +60,7 @@ class Order extends \yii\db\ActiveRecord
             'price' => 'Price',
             'payfee' => 'Payfee',
             'payorderid' => 'Payorderid',
+            'chorderid' => 'Chorderid',
             'paytime' => 'Paytime',
             'sjteamid' => 'Sjteamid',
             'sjopenid' => 'Sjopenid',
