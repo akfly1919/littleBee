@@ -8,6 +8,7 @@ use api\models\Point;
 use api\models\Team;
 use api\models\ThirdWxPay;
 use api\models\WeChat;
+use api\models\WeChatLogin;
 use api\models\Sms;
 use api\models\Tools;
 use api\models\WxFz;
@@ -59,6 +60,18 @@ class ApiController extends ActiveController
     // 测试
     public function actionMyTest()
     {
+        exit(123);
+        $teamID = 5;
+        $security  = Yii::$app->getSecurity();
+
+        // 将下划线修替换为A
+        $randomStr = str_replace('_', 'A', $security->generateRandomString());
+        $tokenStr  = base64_encode($randomStr.'_'.$randomStr.'_'.time().'_'.$teamID);
+
+        // Yii2 hash加密
+        $api_token = $security->hashData($tokenStr, "littleBee");
+        echo $api_token;
+        exit;
         $team = Team::findOne(517);
         print_r($team);die;
     }
@@ -1446,6 +1459,42 @@ class ApiController extends ActiveController
             }
             throw new \ErrorException('randomStr 必填');
             // 如果没有这个随机串将获取不到session的验证码
+
+        } catch (Exception $e) {
+
+            return $this->filters->errorCustom($e);
+        }
+    }
+
+
+
+    /**
+     * 获取sessionKey 和 openID
+     */
+    public function actionWxLogin()
+    {
+        $this->actionName = Yii::$app->controller->action->id;
+        try {
+
+            $code = $this->filters->request->get('code') ? htmlspecialchars(trim($this->filters->request->get('code'))) : null;
+
+            // 登录
+            if(!is_null($code))
+            {
+                $weChatLogin    = new WeChatLogin($code); // 获取teamID、token
+                list($openID, $accessToken) = $weChatLogin->getOpenID();
+
+                $unionId = $weChatLogin->getUserInfo($accessToken, $openID);
+
+                $loginForm = new LoginForm();     // 登录model
+                $loginForm->openid = $openID;
+
+                $this->filters->miniProgram->teamID = $loginForm->getTeamID($openID);
+                $this->apiToken                     = $loginForm->login($accessToken);
+
+                return $this->apiPrepare();
+            }
+            throw new \ErrorException('请提供微信随机码 code');
 
         } catch (Exception $e) {
 

@@ -296,6 +296,9 @@ class MiniProgram {
                 case 'buy-member-check':
                     return $this->buyMemberCheck();
                     break;
+                case 'wx-login':
+                    return $this->wxLoginInterface($apiToken);
+                    break;
             }
         
         } catch (Exception $e) {
@@ -364,7 +367,7 @@ class MiniProgram {
     {
         return $this->appRegisterLoginReset($apiToken, 'registerRs');
     }
-    
+
     /**
      * app登录
      */
@@ -435,7 +438,17 @@ class MiniProgram {
         
         return $this->publicData([]);
     }
-    
+
+    /**
+     * 小程序验证码登录接口
+     */
+    protected function wxLoginInterface($apiToken)
+    {
+        $this->apiToken = $apiToken;
+
+        return $this->publicData([]);
+    }
+
     /**
      * 获取短信验证码
      */

@@ -23,6 +23,9 @@ return [
         'createOrderUrl'    => 'https://api.mch.weixin.qq.com/pay/unifiedorder',
         //分账地址
         'profitSharingUrl'    => 'https://api.mch.weixin.qq.com/secapi/pay/profitsharing',
+
+        'wxLoginUrl'  => "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
+        'wxUserInfoUrl'  => "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s",
     ],
 
     'thirdWxPayParams' => [
@@ -78,7 +81,10 @@ return [
         'login',
         'from-share',
         'mini-code-login',
-        'decrypt-user-phone'
+        'decrypt-user-phone',
+
+        //微信
+        'wx-login'
     ],
     
     // 不需要判断手机号是否存在的action
