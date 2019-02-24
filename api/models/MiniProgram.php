@@ -531,7 +531,7 @@ class MiniProgram {
         $echoData['lunbo']   = $lunbo;    // 轮播消息
         $echoData['pro']     = $pro;      // 贷款产品
         $echoData['creData'] = $creData;  // 信用卡/大数据
-        
+
         return $echoData;
     }
     
@@ -570,7 +570,7 @@ class MiniProgram {
         // 处理信用卡/大数据产品biaoqian字段和图片路径
         $creditanddata = $this->processBiaoQian($creditanddata);
         $creditanddata = $this->mapImg($creditanddata, 'img');
-        
+
         return $creditanddata;
     }
     
@@ -796,12 +796,16 @@ class MiniProgram {
         $client = Client::findOne(['teamid' => $this->teamID]);
         if($client)
             $teamID = $client->shangjiid;
-        
-        $team = is_null($teamID) ? $this->teamID : $teamID;
-            
-        $echoData['cManager']['name']  = $team->name;
-        $echoData['cManager']['phone'] = $team->phone;
-        
+        $clientSj = null;
+        if (!is_null($teamID)) {
+            $clientSj = Client::findOne(['teamid' => $teamID]);
+        }
+        $echoData['cManager'] = [];
+        if (!is_null($clientSj)) {
+            $echoData['cManager']['name']  = $clientSj->name;
+            $echoData['cManager']['phone'] = $clientSj->phone;
+        }
+
         return $echoData;
     }
     
@@ -837,7 +841,12 @@ class MiniProgram {
             $echoData['proDetail']['certfifcate']= $this->pro->certfifcate;
             $echoData['proDetail']['question']   = $this->pro->question;
             $echoData['proDetail']['ptconnect']  = $this->pro->ptconnect;
-            
+            if (!is_null($this->proType)) {
+//                $echoData['proDetail']['maxfybl']  = $this->pro->maxfybl;
+//                $echoData['proDetail']['keyMsg']  = $this->pro->keyMsg;
+//                $echoData['proDetail']['pointMsg']  = $this->pro->pointMsg;
+//                $echoData['proDetail']['payMsg']  = $this->pro->payMsg;
+            }
             return $echoData;
         }
         else throw new \InvalidArgumentException('产品ID是非法的');
@@ -1059,13 +1068,13 @@ class MiniProgram {
         $echoData['proName'] = $this->pro->name;
         $echoData['proLogo'] = $this->strReplace($this->pro->img, self::PATH_JUST);
         $echoData['bjImg']   = $this->strReplace($this->ewming->img, self::PATH_JUST);
-        
+
         // 产品跳转链接
         $this->shareUrl = sprintf(Yii::$app->params['shareParams']['shareUrl'], $this->proID, $this->teamID, $this->proType);
-        
+
         // 2019-01-11全部重新生成二维码
         $this->createLogoCode();
-        
+
         // 不存在时生成此产品的二维码同时添加数据
         if(!$this->chare)
         {
@@ -1077,7 +1086,7 @@ class MiniProgram {
         }
         // 存在但是二维码有问题则重新生成   2019-01-11先走上面的全部生成二维码
         // else if(!$this->chare->img) $this->createLogoCode();
-        
+
         $echoData['shareUrl'] = $this->shareUrl;
         $echoData['codeImg']  = $this->strReplace($this->chare->img, self::PATH_JUST);
         
