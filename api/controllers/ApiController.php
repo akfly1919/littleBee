@@ -465,6 +465,8 @@ class ApiController extends ActiveController
             // 解密成功
             if ($errorCode == 0)
             {
+                Tools::log("decrypt data: ".$data, $this->actionName, null);
+
                 $data  = json_decode($data, true);
                 
                 // 解密获取到的手机号

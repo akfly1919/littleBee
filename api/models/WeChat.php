@@ -222,7 +222,9 @@ class WeChat
         // 拿到open_id
         $openID     = $wxResult['openid'];
         $sessionKey = $wxResult['session_key'];
-        
+
+        Tools::log($wxResult, "WeChat jscode2session wxResult", null);
+
         return array($openID, $sessionKey);
     }
 }
