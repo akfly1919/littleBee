@@ -1473,7 +1473,7 @@ class ApiController extends ActiveController
     /**
      * 获取sessionKey 和 openID
      */
-    public function actionWxLogin()
+    public function actionWxLogin2()
     {
         $this->actionName = Yii::$app->controller->action->id;
         try {
@@ -1497,6 +1497,47 @@ class ApiController extends ActiveController
                 return $this->apiPrepare();
             }
             throw new \ErrorException('请提供微信随机码 code');
+
+        } catch (Exception $e) {
+
+            return $this->filters->errorCustom($e);
+        }
+    }
+
+
+    public function actionWxLogin()
+    {
+        $this->actionName = Yii::$app->controller->action->id;
+        try {
+
+            $loginData = $this->filters->request->post('loginData') ? $this->filters->request->post('loginData') : null;
+
+            // 登录
+            if(!is_null($loginData))
+            {
+                $loginData = json_decode($loginData, true);
+                $openID = isset($loginData['openid']) ? $loginData['openid'] : 0;
+                $unionid = isset($loginData['unionid']) ? $loginData['unionid'] : 0;
+                $accessToken = isset($loginData['accessToken']) ? $loginData['accessToken'] : "";
+                $screenName = isset($loginData['screen_name']) ? $loginData['screen_name'] : "";
+
+                if ($openID && $unionid && $accessToken && $screenName) {
+                    $loginForm = new LoginForm();     // 登录model
+                    $loginForm->openid = $openID;
+                    $this->filters->miniProgram->teamID = $loginForm->getTeamID($openID);
+                    $this->apiToken                     = $loginForm->login($accessToken);
+
+                    $team = Team::findOne(['openid' => $openID]);
+                    if (empty($team->nickname)) {
+                        $team->nickname = $screenName;
+                        $team->save();
+                    }
+
+                    return $this->apiPrepare();
+                }
+                throw new \ErrorException('参数错误');
+            }
+            throw new \ErrorException('登录信息为null');
 
         } catch (Exception $e) {
 
