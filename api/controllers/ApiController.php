@@ -1521,6 +1521,9 @@ class ApiController extends ActiveController
                 $accessToken = isset($loginData['accessToken']) ? $loginData['accessToken'] : "";
                 $screenName = isset($loginData['screen_name']) ? $loginData['screen_name'] : "";
 
+                Tools::log(['openID'=>$openID,'unionid'=>$unionid,'accessToken'=>$accessToken,'screenName'=>$screenName],
+                    $this->actionName, null);
+
                 if ($openID && $unionid && $accessToken && $screenName) {
                     $loginForm = new LoginForm();     // 登录model
                     $loginForm->openid = $openID;
