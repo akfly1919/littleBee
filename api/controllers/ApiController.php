@@ -1533,7 +1533,7 @@ class ApiController extends ActiveController
                     $team = Team::findOne(['openid' => $openID]);
                     if (empty($team->nickname)) {
                         $team->nickname = $screenName;
-                        $team->save();
+                        $team->save(false);
                     }
 
                     return $this->apiPrepare();
