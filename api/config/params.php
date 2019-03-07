@@ -94,6 +94,7 @@ return [
         'reset-password',
         'save-client',
         'save-team-profile',
-        'mini-code-login'
+        'mini-code-login',
+        'bound-phone'
     ],
 ];
