@@ -1771,6 +1771,8 @@ class MiniProgram {
                 if ($team->phone != "") {
                     $team->phone = $this->boundPhone;
                     if ($team->save(false)) {
+                        $echoData['code'] = 200;
+                        $echoData['message'] = "OK";
                         return $echoData;
                     }
                     throw new UnauthorizedHttpException('绑定失败');
