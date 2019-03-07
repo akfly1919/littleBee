@@ -859,10 +859,10 @@ class MiniProgram {
             $echoData['proDetail']['question']   = $this->pro->question;
             $echoData['proDetail']['ptconnect']  = $this->pro->ptconnect;
             if (!is_null($this->proType)) {
-//                $echoData['proDetail']['maxfybl']  = $this->pro->maxfybl;
-//                $echoData['proDetail']['keyMsg']  = $this->pro->keyMsg;
-//                $echoData['proDetail']['pointMsg']  = $this->pro->pointMsg;
-//                $echoData['proDetail']['payMsg']  = $this->pro->payMsg;
+                $echoData['proDetail']['maxfybl']  = $this->pro->maxfybl;
+                $echoData['proDetail']['keyMsg']  = $this->pro->keyMsg;
+                $echoData['proDetail']['pointMsg']  = $this->pro->pointMsg;
+                $echoData['proDetail']['payMsg']  = $this->pro->payMsg;
             }
             return $echoData;
         }

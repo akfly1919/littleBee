@@ -905,7 +905,7 @@
 		
 六、接口
 	1.app C端产品详情
-		GET https://zxgybj.com/api/app-from-share?proID=4&teamID=555
+		GET https://zxgybj.com/api/app-from-share?proID=4&teamID=555&proType=1
 
 		返回:
 			code   成功标识
