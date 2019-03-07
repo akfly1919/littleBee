@@ -1547,4 +1547,36 @@ class ApiController extends ActiveController
             return $this->filters->errorCustom($e);
         }
     }
+
+    public function actionBoundPhone()
+    {
+        $this->actionName = Yii::$app->controller->action->id;
+        try {
+            if($this->filters->request->isPost) {
+                $randomStr = $this->filters->request->post('randomStr') ? htmlspecialchars(trim($this->filters->request->post('randomStr'))) : null;
+                if(!is_null($randomStr)) {
+                    Tools::log("randomStr: ". $randomStr, $this->actionName, null);
+
+                    $this->filters->setRandomStr($randomStr);
+
+                    // 获取手机号
+                    $this->filters->miniProgram->boundPhone = $this->filters->teamPhone($this->actionName);
+                    // 检查验证码是否正确
+                    $checkRs = $this->filters->msgCode();
+
+                    Tools::log("checkRs: ".$checkRs, $this->actionName, null);
+
+                    if($checkRs)
+                    {
+                        return $this->apiPrepare();
+                    }
+                    throw new \ErrorException('验证码错误');
+                }
+                throw new \ErrorException('randomStr 必填');
+            }
+            throw new \ErrorException('请求方法非法', 405);
+        } catch (Exception $e) {
+            return $this->filters->errorCustom($e);
+        }
+    }
 }

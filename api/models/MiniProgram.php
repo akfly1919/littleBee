@@ -39,6 +39,7 @@ class MiniProgram {
     public $wxId;        // 微信ID
     public $wxName;      // 微信名称
     public $shareOpenId; // 分账openId
+    public $boundPhone;  // 绑定手机号
     public $shareRealName; // 分账真实姓名
     private $openID;     // openid
     private $sessionKey; // sessionkey
@@ -298,6 +299,9 @@ class MiniProgram {
                     break;
                 case 'wx-login':
                     return $this->wxLoginInterface($apiToken);
+                    break;
+                case 'bound-phone':
+                    return $this->boundPhoneInterface($apiToken);
                     break;
             }
         
@@ -1754,4 +1758,30 @@ class MiniProgram {
         }
         throw new UnauthorizedHttpException('token 是非法的');
     }
+
+
+    protected function boundPhoneInterface() {
+        $echoData = [];
+
+        if($this->teamID)
+        {
+            $team = Team::findOne((int) $this->teamID);
+            if($team)
+            {
+                if ($team->phone != "") {
+                    $team->phone = $this->boundPhone;
+                    if ($team->save(false)) {
+                        return $echoData;
+                    }
+                    throw new UnauthorizedHttpException('绑定失败');
+                }
+                throw new UnauthorizedHttpException('该用户已经绑定手机号');
+            }
+            throw new UnauthorizedHttpException('用户不存在.');
+        }
+        throw new UnauthorizedHttpException('token 是非法的');
+    }
+
+
+
 }
